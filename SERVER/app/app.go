@@ -33,6 +33,7 @@ func Run() {
 	serverlog.Info("API server running at: http://localhost:8080")
 	serverlog.Route("POST", "/cards", "Create a new word")
 	serverlog.Route("GET", "/cards", "List words")
+	serverlog.Route("POST", "/check-in", "Check in to Parroto streak")
 	serverlog.Route("POST", "/refresh-token", "Proxy Firebase refresh token API")
 	serverlog.Route("POST", "/guess-word", "Guess a word using LLM")
 	serverlog.Route("POST", "/bot-queue/start", "Start bot queue")

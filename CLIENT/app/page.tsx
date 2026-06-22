@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 
 const SOCKET_URL = process.env.SOCKET_URL ?? 'wss://api-socket.parroto.app/socket.io/?EIO=4&transport=websocket';
 const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:8080';
+const TOKEN_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
 type LogEvent = {
   id: string;
@@ -85,6 +86,60 @@ type LLMGuessResult = {
 
 type LLMGuessApiResponse = {
   guess?: LLMGuessResult;
+};
+
+type CheckInApiResponse = {
+  status: string;
+  message: string;
+  data?: {
+    current_streak: number;
+    max_streak: number;
+    freeze_count: number;
+    freeze_used: boolean;
+    daily_reward_diamonds: number;
+    milestone_reached: string | null;
+    already_counted_today: boolean;
+  };
+};
+
+type CheckInCache = {
+  date: string;
+  checkedAt: string;
+  message: string;
+  reward?: number;
+  currentStreak?: number;
+};
+
+type VocabBattleActivityResponse = {
+  status: string;
+  message: string;
+  data?: {
+    _id: string;
+    userId: string;
+    elo: number;
+    totalDiamondsLost: number;
+    totalDiamondsWon: number;
+    totalDraws: number;
+    totalGames: number;
+    totalLosses: number;
+    totalRoundsWon: number;
+    totalWins: number;
+    lastPlayedAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+};
+
+type BattleActivityStats = {
+  elo: number;
+  totalGames: number;
+  totalWins: number;
+  totalLosses: number;
+  totalDraws: number;
+  totalRoundsWon: number;
+  totalDiamondsWon: number;
+  totalDiamondsLost: number;
+  updatedAt?: string;
 };
 
 type Opponent = {
@@ -271,6 +326,12 @@ export default function ParotoMonitor() {
   const [refreshToken, setRefreshToken] = useState('');
   const [autoRefreshToken, setAutoRefreshToken] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [autoTimedRefreshToken, setAutoTimedRefreshToken] = useState(false);
+  const [scheduledRefreshStatus, setScheduledRefreshStatus] = useState('Auto refresh 30p: OFF');
+  const [autoCheckIn, setAutoCheckIn] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [checkInToday, setCheckInToday] = useState(false);
+  const [checkInStatusText, setCheckInStatusText] = useState('Chưa check-in hôm nay');
   const [avoidUserIds, setAvoidUserIds] = useState('');
   const [battleRoomId, setBattleRoomId] = useState('');
   const [battleRoomPassword, setBattleRoomPassword] = useState('');
@@ -294,6 +355,8 @@ export default function ParotoMonitor() {
   const [matchStats, setMatchStats] = useState({ wins: 0, losses: 0 });
   const [myCorrectCount, setMyCorrectCount] = useState(0);
   const [myDiamonds, setMyDiamonds] = useState<number | null>(null);
+  const [myBattleActivity, setMyBattleActivity] = useState<BattleActivityStats | null>(null);
+  const [isLoadingBattleActivity, setIsLoadingBattleActivity] = useState(false);
   const [opponentCorrectCount, setOpponentCorrectCount] = useState(0);
   const [events, setEvents] = useState<LogEvent[]>([]);
   const [collectedVocabs, setCollectedVocabs] = useState<CollectedVocab[]>([]);
@@ -341,8 +404,17 @@ export default function ParotoMonitor() {
   const autoConnectRef = useRef(false);
   const autoSyncAfterBattleRef = useRef(false);
   const autoRefreshTokenRef = useRef(false);
+  const autoTimedRefreshTokenRef = useRef(false);
+  const autoCheckInRef = useRef(false);
   const firebaseTokenRef = useRef('');
   const avoidUserIdsRef = useRef('');
+  const apiKeyRef = useRef('');
+  const refreshTokenValueRef = useRef('');
+  const tokenRefreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingTokenRefreshAfterBattleRef = useRef(false);
+  const isInBattleRef = useRef(false);
+  const isSearchingBattleRef = useRef(false);
+  const isRefreshingRef = useRef(false);
   const manualDisconnectRef = useRef(false);
   const failedConnectionsRef = useRef(0);
   const pendingAutoJoinAfterReconnectRef = useRef(false);
@@ -352,6 +424,7 @@ export default function ParotoMonitor() {
   const userInfoRef = useRef<UserInfo>(DEFAULT_USER_INFO);
   const serverLoadingRef = useRef(false);
   const botQueuePollingRef = useRef<NodeJS.Timeout | null>(null);
+  const initialBattleActivityLoadedRef = useRef(false);
 
   const applyFirebaseToken = (token: string, logSource = 'Manual Input', shouldLog = false) => {
     const cleanToken = token.trim();
@@ -362,12 +435,19 @@ export default function ParotoMonitor() {
     if (!cleanToken) {
       setUserInfo(DEFAULT_USER_INFO);
       userInfoRef.current = DEFAULT_USER_INFO;
+      setCheckInToday(false);
+      setCheckInStatusText('Chưa check-in hôm nay');
       return;
     }
 
     const updatedUserInfo = getUserInfoFromFirebaseToken(cleanToken);
     setUserInfo(updatedUserInfo);
     userInfoRef.current = updatedUserInfo;
+
+    setTimeout(() => {
+      syncCheckInTodayFromStorage();
+      loadInitialBattleActivityOnce();
+    }, 0);
 
     if (updatedUserInfo.userId === DEFAULT_USER_INFO.userId) {
       if (shouldLog) {
@@ -459,6 +539,42 @@ export default function ParotoMonitor() {
     localStorage.setItem('paroto_auto_refresh_token', String(val));
   };
 
+  const handleSetAutoTimedRefreshToken = (val: boolean) => {
+    setAutoTimedRefreshToken(val);
+    autoTimedRefreshTokenRef.current = val;
+    localStorage.setItem('paroto_auto_refresh_token_30m', String(val));
+
+    if (val) {
+      startTimedTokenRefresh();
+      pushLog('auth', '⏱️ Auto Refresh 30p ON', 'Đã bật tự động refresh_token mỗi 30 phút. Nếu đang trong trận, hệ thống sẽ chờ game-over rồi mới refresh.');
+    } else {
+      stopTimedTokenRefresh('Đã tắt tự động refresh_token mỗi 30 phút.');
+      pushLog('auth', '⚪ Auto Refresh 30p OFF', 'Đã tắt tự động refresh_token định kỳ.');
+    }
+  };
+
+  const handleSetAutoCheckIn = (val: boolean) => {
+    setAutoCheckIn(val);
+    autoCheckInRef.current = val;
+    localStorage.setItem('paroto_auto_checkin', String(val));
+
+    pushLog(
+      'auth',
+      val ? '💎 Auto Check-in ON' : '⚪ Auto Check-in OFF',
+      val
+        ? 'Đã bật tự động check-in. Nếu hôm nay chưa check-in thì hệ thống sẽ gọi API một lần.'
+        : 'Đã tắt tự động check-in.'
+    );
+
+    if (val) {
+      setTimeout(() => {
+        if (autoCheckInRef.current) {
+          handleCheckIn(true);
+        }
+      }, 300);
+    }
+  };
+
   const handleSetBotQueueAutoRefresh = (val: boolean) => {
     setBotQueueAutoRefresh(val);
     localStorage.setItem('paroto_bot_queue_auto_refresh', String(val));
@@ -497,18 +613,27 @@ export default function ParotoMonitor() {
   };
 
   const handleRefreshFirebaseToken = async () => {
-    if (!apiKey.trim() || !refreshToken.trim()) {
+    if (isRefreshingRef.current) {
+      pushLog('auth', '⏭️ Bỏ qua Refresh Token', 'Đang có một lượt refresh_token chạy, không gọi trùng.');
+      return false;
+    }
+
+    const currentApiKey = (apiKeyRef.current || apiKey).trim();
+    const currentRefreshToken = (refreshTokenValueRef.current || refreshToken).trim();
+
+    if (!currentApiKey || !currentRefreshToken) {
       pushLog('error', '🔴 Đổi Token thất bại', 'Thiếu API Key hoặc Refresh Token để thực hiện gia hạn.');
       return false;
     }
 
+    isRefreshingRef.current = true;
     setIsRefreshing(true);
     pushLog('auth', '🔄 Đang làm mới Token', 'Đang gửi yêu cầu làm mới access token tới Go API Server...');
 
     try {
       const response = await axios.post(`${API_BASE_URL}/refresh-token`, {
-        key: apiKey.trim(),
-        refresh_token: refreshToken.trim()
+        key: currentApiKey,
+        refresh_token: currentRefreshToken
       }, { timeout: 10000 });
 
       if (response.status === 200) {
@@ -522,10 +647,12 @@ export default function ParotoMonitor() {
           applyFirebaseToken(newAccessToken, 'Auto Refresh API', true);
           if (newRefreshToken) {
             setRefreshToken(newRefreshToken);
+            refreshTokenValueRef.current = newRefreshToken;
             localStorage.setItem('paroto_refresh_token', newRefreshToken);
           }
 
           failedConnectionsRef.current = 0;
+          isRefreshingRef.current = false;
           setIsRefreshing(false);
           return true;
         }
@@ -534,9 +661,61 @@ export default function ParotoMonitor() {
     } catch (err: any) {
       const errMsg = err.response?.data?.message || err.message;
       pushLog('error', '🔴 Lỗi khi gọi API Refresh Token', errMsg);
+      isRefreshingRef.current = false;
       setIsRefreshing(false);
       return false;
     }
+  };
+
+  const getTimeLabel = () => new Date().toLocaleTimeString('vi-VN', { hour12: false } as any);
+
+  const stopTimedTokenRefresh = (message = 'Auto refresh 30p: OFF') => {
+    if (tokenRefreshIntervalRef.current) {
+      clearInterval(tokenRefreshIntervalRef.current);
+      tokenRefreshIntervalRef.current = null;
+    }
+
+    pendingTokenRefreshAfterBattleRef.current = false;
+    setScheduledRefreshStatus(message);
+  };
+
+  const runTimedTokenRefresh = async (source: 'interval' | 'after-battle' = 'interval') => {
+    if (!autoTimedRefreshTokenRef.current) return false;
+
+    if (isInBattleRef.current || isSearchingBattleRef.current) {
+      pendingTokenRefreshAfterBattleRef.current = true;
+      const msg = 'Đến giờ refresh nhưng đang trong trận, sẽ refresh sau khi game-over.';
+      setScheduledRefreshStatus(msg);
+      pushLog('auth', '⏳ Hoãn refresh_token', msg);
+      return false;
+    }
+
+    pendingTokenRefreshAfterBattleRef.current = false;
+    setScheduledRefreshStatus(source === 'after-battle' ? 'Đang refresh sau game-over...' : 'Đang refresh định kỳ 30 phút...');
+
+    const ok = await handleRefreshFirebaseToken();
+    if (ok) {
+      const msg = `Đã refresh_token lúc ${getTimeLabel()}`;
+      setScheduledRefreshStatus(msg);
+      pushLog('auth', source === 'after-battle' ? '✅ Refresh sau game-over' : '✅ Refresh định kỳ', msg);
+    } else {
+      setScheduledRefreshStatus(`Refresh_token lỗi lúc ${getTimeLabel()}`);
+    }
+
+    return ok;
+  };
+
+  const startTimedTokenRefresh = () => {
+    if (tokenRefreshIntervalRef.current) {
+      clearInterval(tokenRefreshIntervalRef.current);
+      tokenRefreshIntervalRef.current = null;
+    }
+
+    setScheduledRefreshStatus('Đã bật auto refresh_token mỗi 30 phút.');
+
+    tokenRefreshIntervalRef.current = setInterval(() => {
+      runTimedTokenRefresh('interval');
+    }, TOKEN_REFRESH_INTERVAL_MS);
   };
 
   const botQueueInputBots = useMemo(() => parseBotQueueInput(botQueueText), [botQueueText]);
@@ -601,11 +780,21 @@ export default function ParotoMonitor() {
     setAutoRefreshToken(cachedAutoRefresh);
     autoRefreshTokenRef.current = cachedAutoRefresh;
 
+    const cachedAutoTimedRefresh = localStorage.getItem('paroto_auto_refresh_token_30m') === 'true';
+    setAutoTimedRefreshToken(cachedAutoTimedRefresh);
+    autoTimedRefreshTokenRef.current = cachedAutoTimedRefresh;
+
+    const cachedAutoCheckIn = localStorage.getItem('paroto_auto_checkin') === 'true';
+    setAutoCheckIn(cachedAutoCheckIn);
+    autoCheckInRef.current = cachedAutoCheckIn;
+
     const cachedApiKey = localStorage.getItem('paroto_api_key') || '';
     setApiKey(cachedApiKey);
+    apiKeyRef.current = cachedApiKey;
 
     const cachedRefreshToken = localStorage.getItem('paroto_refresh_token') || '';
     setRefreshToken(cachedRefreshToken);
+    refreshTokenValueRef.current = cachedRefreshToken;
 
     const cachedAvoidUserIds = localStorage.getItem('paroto_avoid_user_ids') || '';
     setAvoidUserIds(cachedAvoidUserIds);
@@ -649,6 +838,14 @@ export default function ParotoMonitor() {
       if (cachedFirebaseToken) {
         applyFirebaseToken(cachedFirebaseToken, 'Auto Load Token', true);
       }
+
+      setTimeout(() => {
+        syncCheckInTodayFromStorage();
+
+        if (cachedAutoCheckIn && cachedFirebaseToken) {
+          handleCheckIn(true);
+        }
+      }, 500);
     } catch (err) {
       pushLog('error', '🔴 Lỗi đọc firebaseToken', String(err));
     }
@@ -668,9 +865,18 @@ export default function ParotoMonitor() {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
       if (autoAnswerTimeoutRef.current) clearTimeout(autoAnswerTimeoutRef.current);
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      if (tokenRefreshIntervalRef.current) clearInterval(tokenRefreshIntervalRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    isInBattleRef.current = isInBattle;
+  }, [isInBattle]);
+
+  useEffect(() => {
+    isSearchingBattleRef.current = isSearchingBattle;
+  }, [isSearchingBattle]);
 
   useEffect(() => {
     if (!botQueueAutoRefresh) {
@@ -729,6 +935,238 @@ export default function ParotoMonitor() {
       setBattleToast((current) => (current?.id === toast.id ? null : current));
       toastTimeoutRef.current = null;
     }, 4500);
+  };
+
+  const getSaigonDateKey = () => {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Saigon',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(new Date());
+
+    const year = parts.find((p) => p.type === 'year')?.value || '';
+    const month = parts.find((p) => p.type === 'month')?.value || '';
+    const day = parts.find((p) => p.type === 'day')?.value || '';
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const getCheckInStorageKey = () => {
+    const uid = userInfoRef.current.userId || 'unknown';
+    return `paroto_checkin_${uid}_${getSaigonDateKey()}`;
+  };
+
+  const syncCheckInTodayFromStorage = () => {
+    const key = getCheckInStorageKey();
+    const cached = localStorage.getItem(key);
+
+    if (!cached) {
+      setCheckInToday(false);
+      setCheckInStatusText('Chưa check-in hôm nay');
+      return false;
+    }
+
+    try {
+      const data = JSON.parse(cached) as CheckInCache;
+
+      setCheckInToday(true);
+      setCheckInStatusText(
+        data.reward
+          ? `Đã check-in hôm nay • +${data.reward} kim cương`
+          : data.message || 'Đã check-in hôm nay'
+      );
+    } catch {
+      setCheckInToday(true);
+      setCheckInStatusText('Đã check-in hôm nay');
+    }
+
+    return true;
+  };
+
+  const markCheckInToday = (response: CheckInApiResponse) => {
+    const data = response.data;
+
+    const cacheData: CheckInCache = {
+      date: getSaigonDateKey(),
+      checkedAt: new Date().toISOString(),
+      message: response.message || 'Đã check-in hôm nay',
+      reward: data?.daily_reward_diamonds,
+      currentStreak: data?.current_streak,
+    };
+
+    localStorage.setItem(getCheckInStorageKey(), JSON.stringify(cacheData));
+
+    setCheckInToday(true);
+    setCheckInStatusText(
+      data?.daily_reward_diamonds
+        ? `Đã check-in hôm nay • +${data.daily_reward_diamonds} kim cương`
+        : response.message || 'Đã check-in hôm nay'
+    );
+  };
+
+  const handleCheckIn = async (silent = false) => {
+    if (syncCheckInTodayFromStorage()) {
+      if (!silent) {
+        pushLog('auth', '✅ Check-in', 'Hôm nay đã check-in rồi, bỏ qua không gọi API.');
+        showBattleToast('info', 'Đã check-in hôm nay', 'Không gọi lại API để tránh điểm danh trùng.');
+      }
+
+      return true;
+    }
+
+    const token = firebaseTokenRef.current.trim();
+
+    if (!token) {
+      if (!silent) {
+        pushLog('error', '🔴 Check-in thất bại', 'Thiếu Firebase Token.');
+        showBattleToast('error', 'Thiếu token', 'Hãy nhập Firebase Token trước khi check-in.');
+      }
+
+      return false;
+    }
+
+    setIsCheckingIn(true);
+
+    if (!silent) {
+      pushLog('auth', '💎 Check-in', 'Đang gọi API check-in...');
+    }
+
+    try {
+      const res = await axios.post<CheckInApiResponse>(
+        `${API_BASE_URL}/check-in`,
+        {},
+        {
+          timeout: 10000,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-User-Timezone': 'Asia/Saigon',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const response = res.data;
+
+      if (response.status === 'success') {
+        markCheckInToday(response);
+
+        const reward = response.data?.daily_reward_diamonds || 0;
+        const streak = response.data?.current_streak || 0;
+        const already = response.data?.already_counted_today;
+
+        pushLog(
+          'auth',
+          already ? '✅ Đã check-in trước đó' : '💎 Check-in thành công',
+          `${response.message} | Streak=${streak} | Reward=+${reward} kim cương`
+        );
+
+        showBattleToast(
+          'success',
+          already ? 'Đã check-in hôm nay' : 'Check-in thành công',
+          reward ? `Nhận +${reward} kim cương. Streak hiện tại: ${streak}` : response.message
+        );
+
+        return true;
+      }
+
+      throw new Error(response.message || 'Check-in không thành công.');
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Lỗi không xác định';
+
+      pushLog('error', '🔴 Check-in lỗi', message);
+
+      if (!silent) {
+        showBattleToast('error', 'Check-in thất bại', message);
+      }
+
+      return false;
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  const loadBattleActivity = async (source: 'manual' | 'game-over' | 'initial' = 'manual') => {
+    const userId = userInfoRef.current.userId;
+    const token = firebaseTokenRef.current.trim();
+
+    if (!userId || userId === DEFAULT_USER_INFO.userId) {
+      if (source === 'manual') {
+        pushLog('error', '🔴 Load ELO thất bại', 'Không xác định được userId từ Firebase Token.');
+      }
+      return null;
+    }
+
+    if (!token) {
+      if (source === 'manual') {
+        pushLog('error', '🔴 Load ELO thất bại', 'Thiếu Firebase Token.');
+      }
+      return null;
+    }
+
+    setIsLoadingBattleActivity(true);
+
+    try {
+      const res = await axios.get(`${API_BASE_URL}/battle-activity`, {
+          timeout: 10000,
+          params: {
+            userId,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-User-Timezone': 'Asia/Saigon',
+          },
+        });
+      const activity = res.data?.data;
+      if (!activity || typeof activity.elo !== 'number') {
+        throw new Error(res.data?.message || 'Không lấy được dữ liệu ELO hợp lệ.');
+      }
+
+      const normalized: BattleActivityStats = {
+        elo: activity.elo,
+        totalGames: activity.totalGames || 0,
+        totalWins: activity.totalWins || 0,
+        totalLosses: activity.totalLosses || 0,
+        totalDraws: activity.totalDraws || 0,
+        totalRoundsWon: activity.totalRoundsWon || 0,
+        totalDiamondsWon: activity.totalDiamondsWon || 0,
+        totalDiamondsLost: activity.totalDiamondsLost || 0,
+        updatedAt: activity.updatedAt || activity.lastPlayedAt,
+      };
+
+      setMyBattleActivity(normalized);
+
+      pushLog(
+        'auth',
+        source === 'game-over' ? '📈 ELO sau trận' : source === 'initial' ? '📈 ELO ban đầu' : '📈 Load ELO',
+        `ELO=${normalized.elo} | Games=${normalized.totalGames} | Wins=${normalized.totalWins} | Losses=${normalized.totalLosses}`
+      );
+
+      return normalized;
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Lỗi không xác định';
+      pushLog('error', '🔴 Load ELO lỗi', message);
+      return null;
+    } finally {
+      setIsLoadingBattleActivity(false);
+    }
+  };
+
+
+  const loadInitialBattleActivityOnce = () => {
+    if (initialBattleActivityLoadedRef.current) return;
+
+    const userId = userInfoRef.current.userId;
+    const token = firebaseTokenRef.current.trim();
+
+    if (!token) return;
+    if (!userId || userId === DEFAULT_USER_INFO.userId) return;
+
+    initialBattleActivityLoadedRef.current = true;
+
+    setTimeout(() => {
+      loadBattleActivity('initial');
+    }, 500);
   };
 
   const loadCardsFromApi = async () => {
@@ -813,7 +1251,7 @@ export default function ParotoMonitor() {
 
   const getLateRoundDelayMs = (totalTimeMs?: number) => {
     const totalMs = Number(totalTimeMs) > 0 ? Number(totalTimeMs) : 30000;
-    const remainingMs = Math.floor(Math.random() * 5001) + 5000; // gửi khi còn ngẫu nhiên 5-10s
+    const remainingMs = Math.floor(Math.random() * 5001) + 15000; // gửi khi còn ngẫu nhiên 5-10s
     const delayMs = Math.max(500, totalMs - remainingMs);
 
     return {
@@ -1178,6 +1616,18 @@ export default function ParotoMonitor() {
         matchStatsRef.current = newMatchStats;
         localStorage.setItem('paroto_match_stats', JSON.stringify(newMatchStats));
 
+        // Sau game-over, gọi activity API để lấy ELO mới nhất của người chơi.
+        setTimeout(() => {
+          loadBattleActivity('game-over');
+        }, 700);
+
+        if (pendingTokenRefreshAfterBattleRef.current) {
+          pendingTokenRefreshAfterBattleRef.current = false;
+          setTimeout(() => {
+            runTimedTokenRefresh('after-battle');
+          }, 1200);
+        }
+
         const shouldAutoSyncAfterBattle = autoSyncAfterBattleRef.current;
         const shouldAutoRematch = autoRematchRef.current;
         const shouldAutoCreateRoom = autoCreateRoomRef.current;
@@ -1236,9 +1686,10 @@ export default function ParotoMonitor() {
     const len = cleanWord.length;
     let delay = 1000;
 
-    if (len < 5) delay = Math.floor(Math.random() * 200) + 500;
-    else if (len <= 8) delay = Math.floor(Math.random() * 400) + 2000;
-    else delay = Math.floor(Math.random() * 500) + Math.floor(Math.random() * 4000);
+    if (len < 5) delay = Math.floor(Math.random() * 200) + 1000;
+    else if (len <= 8) delay = Math.floor(Math.random() * 400) + 3000;
+    else if (len <= 12) delay = Math.floor(Math.random() * 400) + 5000;
+    else delay = Math.floor(Math.random() * 500) + Math.floor(Math.random() * 8000);
 
     clearPendingAutoAnswer();
     pushLog('auth', '🤖 Auto-Solver', `Từ [${cleanWord}] (${len} ký tự) -> Tự gửi sau ${(delay / 1000).toFixed(2)}s`);
@@ -1702,6 +2153,31 @@ export default function ParotoMonitor() {
                     />
                   </label>
 
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-blue-100 bg-blue-50/50 p-3">
+                    <div>
+                      <div className="text-sm font-bold text-blue-700">Auto Refresh 30 phút</div>
+                      <div className="text-xs text-slate-500">Tự refresh_token sau mỗi 30 phút. Nếu đang trong trận sẽ chờ game-over rồi mới refresh.</div>
+                      <div className="mt-1 text-[11px] font-medium text-blue-600">{scheduledRefreshStatus}</div>
+                    </div>
+                    <Checkbox
+                      checked={autoTimedRefreshToken}
+                      onCheckedChange={(c) => handleSetAutoTimedRefreshToken(!!c)}
+                      className="border-blue-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                    />
+                  </label>
+
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-amber-100 bg-amber-50/50 p-3">
+                    <div>
+                      <div className="text-sm font-bold text-amber-700">Auto Check-in</div>
+                      <div className="text-xs text-slate-500">Tự điểm danh mỗi ngày một lần. Nếu hôm nay đã check-in thì không gọi API nữa.</div>
+                    </div>
+                    <Checkbox
+                      checked={autoCheckIn}
+                      onCheckedChange={(c) => handleSetAutoCheckIn(!!c)}
+                      className="border-amber-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                    />
+                  </label>
+
                   <label className="flex cursor-pointer items-center justify-between rounded-xl border border-emerald-100 bg-white p-3">
                     <div>
                       <div className="text-sm font-bold text-emerald-700">Auto Answer</div>
@@ -2078,6 +2554,57 @@ export default function ParotoMonitor() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className={
+                    checkInToday
+                      ? 'border-emerald-200 bg-emerald-50 font-semibold text-emerald-700 hover:bg-emerald-50'
+                      : 'border-amber-200 bg-amber-50 font-semibold text-amber-700 hover:bg-amber-100'
+                  }
+                  onClick={() => handleCheckIn(false)}
+                  disabled={isCheckingIn || checkInToday || !firebaseToken.trim()}
+                >
+                  {isCheckingIn ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : checkInToday ? (
+                    <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                  ) : (
+                    <Gem className="mr-1.5 h-4 w-4" />
+                  )}
+                  {isCheckingIn ? 'Đang check-in...' : checkInToday ? 'Đã check-in' : 'Check-in'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={
+                    autoCheckIn
+                      ? 'border-amber-300 bg-amber-600 font-semibold text-white hover:bg-amber-700'
+                      : 'border-amber-200 bg-white font-semibold text-amber-700 hover:bg-amber-50'
+                  }
+                  onClick={() => handleSetAutoCheckIn(!autoCheckIn)}
+                >
+                  <Gem className="mr-1.5 h-4 w-4" />
+                  {autoCheckIn ? 'Auto check-in ON' : 'Auto check-in'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={
+                    autoTimedRefreshToken
+                      ? 'border-blue-300 bg-blue-600 font-semibold text-white hover:bg-blue-700'
+                      : 'border-blue-200 bg-white font-semibold text-blue-700 hover:bg-blue-50'
+                  }
+                  onClick={() => handleSetAutoTimedRefreshToken(!autoTimedRefreshToken)}
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-1.5 h-4 w-4" />
+                  )}
+                  {autoTimedRefreshToken ? 'Auto refresh 30p ON' : 'Auto refresh 30p'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                   onClick={disconnectSocket}
                   disabled={socketStatus === 'disconnected'}
@@ -2117,6 +2644,7 @@ export default function ParotoMonitor() {
                   value={apiKey}
                   onChange={(e) => {
                     setApiKey(e.target.value);
+                    apiKeyRef.current = e.target.value;
                     localStorage.setItem('paroto_api_key', e.target.value);
                   }}
                   placeholder="AIzaSyDy3B5322..."
@@ -2130,6 +2658,7 @@ export default function ParotoMonitor() {
                   value={refreshToken}
                   onChange={(e) => {
                     setRefreshToken(e.target.value);
+                    refreshTokenValueRef.current = e.target.value;
                     localStorage.setItem('paroto_refresh_token', e.target.value);
                   }}
                   placeholder="AMf-vBz9PMLTHiakB..."
@@ -2154,6 +2683,15 @@ export default function ParotoMonitor() {
               <div className="flex flex-wrap items-center gap-3">
                 <span>UID: <span className="font-bold text-sky-600">{userInfo.userId}</span></span>
                 <span>Email: <span className="font-bold text-sky-600">{userInfo.email}</span></span>
+                <span
+                  className={
+                    checkInToday
+                      ? 'rounded-md border border-emerald-100 bg-emerald-50 px-2 py-1 font-bold text-emerald-600'
+                      : 'rounded-md border border-amber-100 bg-amber-50 px-2 py-1 font-bold text-amber-600'
+                  }
+                >
+                  {checkInStatusText}
+                </span>
                 {battleRoomId.trim() && (
                   <span className="rounded-md border border-sky-100 bg-white px-2 py-1 text-sky-600">
                     Room: <b>{battleRoomId}</b>
@@ -2190,6 +2728,23 @@ export default function ParotoMonitor() {
                 </Badge>
                 <Badge variant="outline" className={autoRematch ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-500'}>
                   Auto Rematch: {autoRematch ? 'ON' : 'OFF'}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={
+                    checkInToday
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-amber-200 bg-amber-50 text-amber-700'
+                  }
+                >
+                  Check-in: {checkInToday ? 'DONE' : 'PENDING'}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={autoTimedRefreshToken ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-500'}
+                  title={scheduledRefreshStatus}
+                >
+                  Refresh 30p: {autoTimedRefreshToken ? (pendingTokenRefreshAfterBattleRef.current ? 'PENDING' : 'ON') : 'OFF'}
                 </Badge>
               </div>
             </div>
@@ -2549,6 +3104,30 @@ export default function ParotoMonitor() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 space-y-3">
+                <div className="flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 text-xs font-medium">
+                  <span className="text-indigo-800 flex items-center gap-1.5">
+                    <Activity className="h-4 w-4 text-indigo-500" /> ELO của bạn:
+                  </span>
+                  <span className="font-mono text-sm font-bold text-indigo-600">
+                    {isLoadingBattleActivity ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : myBattleActivity ? (
+                      myBattleActivity.elo.toLocaleString('vi-VN')
+                    ) : (
+                      '---'
+                    )}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-500">
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5">
+                    Trận: <span className="font-mono text-slate-700">{myBattleActivity?.totalGames ?? '--'}</span>
+                  </div>
+                  <div className="rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5">
+                    Thắng: <span className="font-mono text-emerald-600">{myBattleActivity?.totalWins ?? '--'}</span>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between rounded-xl border border-amber-100 bg-amber-50/50 p-3 text-xs font-medium">
                   <span className="text-amber-800 flex items-center gap-1.5">
                     <Gem className="h-4 w-4 text-amber-500" /> Kim cương của bạn:
@@ -2597,13 +3176,14 @@ export default function ParotoMonitor() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-7">
           {[
             { label: 'Tổng sự kiện', val: stats.total, color: 'text-sky-600' },
             { label: 'Gói tin nhận', val: stats.received, color: 'text-blue-600' },
             { label: 'Gói tin gửi', val: stats.sent, color: 'text-violet-600' },
             { label: 'Bạn đúng', val: myCorrectCount, color: 'text-emerald-600' },
             { label: 'Địch đúng', val: opponentCorrectCount, color: 'text-rose-600' },
+            { label: 'ELO', val: myBattleActivity?.elo ?? '---', color: 'text-indigo-600' },
             { label: 'W/L', val: `${matchStats.wins}W - ${matchStats.losses}L`, color: 'text-amber-500' },
           ].map((s, idx) => (
             <Card key={idx} className="border-slate-200 bg-white shadow-sm">
