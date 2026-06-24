@@ -1,0 +1,297 @@
+{
+  "_id": "68c84d60814d43daf466b0ff",
+  "title": "YOUR NAME English Trailer (2016) Anime Movie",
+  "description": "",
+  "duration": "01:47",
+  "topic_id": {
+    "_id": "682b5c1c49c0db70e9225d90",
+    "name": "Movie short clip",
+    "slug": "movie-short-clip"
+  },
+  "slug": "your-name-english-trailer-2016-anime-movie",
+  "difficulty": "B1",
+  "type": "youtube",
+  "url": "https://www.youtube.com/watch?v=dbtN9HOOqhk",
+  "is_pro": false,
+  "sentence_ids": [
+    {
+      "_id": "68c84d62814d43daf466b183",
+      "text": "The day, a star fell.",
+      "translations": {
+        "vi": "Ngày đó, một ngôi sao rơi.",
+        "th": "วันนั้น, ดาวตก.",
+        "id": "Hari itu, sebuah bintang jatuh.",
+        "ar": "اليوم، سقطت نجمة."
+      },
+      "ipa": "ðə ˈdeɪ, ə ˈstɑːr ˈfɛl.",
+      "start_ms": 1160,
+      "end_ms": 3480
+    },
+    {
+      "_id": "68c84d62814d43daf466b185",
+      "text": "It was almost like, like seeing something out of a dream.",
+      "translations": {
+        "vi": "Cứ như là, như thấy một thứ gì đó từ trong mơ.",
+        "th": "มันแทบจะเหมือนกับว่า, เหมือนเห็นบางสิ่งบางอย่างที่หลุดออกมาจากความฝัน.",
+        "id": "Rasanya hampir seperti, seperti melihat sesuatu dari mimpi.",
+        "ar": "كان الأمر تقريبًا مثل، مثل رؤية شيء من حلم."
+      },
+      "ipa": "ɪt wəz ˈɔlˌmoʊst ˈlaɪk, ˈlaɪk ˈsiːɪŋ ˈsʌmθɪŋ ˌaʊt əv ə ˈdriːm.",
+      "start_ms": 4040,
+      "end_ms": 7100
+    },
+    {
+      "_id": "68c84d62814d43daf466b188",
+      "text": "Nothing more or less, than a breathtaking view.",
+      "translations": {
+        "vi": "Không hơn không kém, một khung cảnh ngoạn mục.",
+        "th": "ไม่มากไม่น้อยไปกว่า, วิวที่สวยจนแทบหยุดหายใจ.",
+        "id": "Tak lebih atau kurang, daripada pemandangan yang menakjubkan.",
+        "ar": "لا شيء أكثر أو أقل، من منظر خلاب."
+      },
+      "ipa": "ˈnʌθɪŋ mɔːr ər lɛs, ðən ə ˈbrɛθˌteɪkɪŋ vjuː.",
+      "start_ms": 7820,
+      "end_ms": 10780
+    },
+    {
+      "_id": "68c84d62814d43daf466b18a",
+      "text": "Wanna hit the cafe later?",
+      "translations": {
+        "vi": "Lát nữa đi cà phê không?",
+        "th": "ไปคาเฟ่กันไหมทีหลัง?",
+        "id": "Mau ke kafe nanti?",
+        "ar": "هل نذهب إلى المقهى لاحقًا؟?"
+      },
+      "ipa": "ˈwɑnə hɪt ðə ˈkæfeɪ ˌleɪɾər?",
+      "start_ms": 26880,
+      "end_ms": 28260
+    },
+    {
+      "_id": "68c84d62814d43daf466b18c",
+      "text": "Thanks, but i got to go to work.",
+      "translations": {
+        "vi": "Cảm ơn, nhưng tôi phải đi làm.",
+        "th": "ขอบคุณ, แต่ฉันต้องไปทำงาน.",
+        "id": "Makasih, tapi aku harus kerja.",
+        "ar": "شكرًا، لكن عليّ الذهاب إلى العمل."
+      },
+      "ipa": "ˈθæŋks, bʌt aɪ ˈɡɑɾə ˈɡoʊ tə ˈwɜrk.",
+      "start_ms": 29000,
+      "end_ms": 30200
+    },
+    {
+      "_id": "68c84d62814d43daf466b18e",
+      "text": "I can't stand this place anymore.",
+      "translations": {
+        "vi": "Tôi không thể chịu đựng nơi này nữa.",
+        "th": "ฉันทนที่นี่ไม่ไหวแล้ว.",
+        "id": "Aku tak tahan tempat ini lagi.",
+        "ar": "لا أطيق هذا المكان بعد الآن."
+      },
+      "ipa": "aɪ ˈkænt ˈstænd ðɪs ˈpleɪs ˌɛniˈmɔr.",
+      "start_ms": 32580,
+      "end_ms": 34280
+    },
+    {
+      "_id": "68c84d62814d43daf466b190",
+      "text": "It's too small and townie.",
+      "translations": {
+        "vi": "Nó quá nhỏ và quê mùa.",
+        "th": "มันเล็กเกินไปและบ้านนอก.",
+        "id": "Terlalu kecil dan kampungan.",
+        "ar": "إنه صغير جدًا وبلدي."
+      },
+      "ipa": "ɪts ˈtuː ˈsmɔl ən ˈtaʊni.",
+      "start_ms": 34900,
+      "end_ms": 37125
+    },
+    {
+      "_id": "68c84d62814d43daf466b192",
+      "text": "Please make me a handsome Tokyo boy in my next life!",
+      "translations": {
+        "vi": "Làm ơn hãy biến tôi thành một chàng trai Tokyo đẹp trai ở kiếp sau!",
+        "th": "โปรดทำให้ฉันเป็นเด็กหนุ่มโตเกียวที่หล่อเหลาในชาติหน้า!",
+        "id": "Tolong jadikan aku cowok Tokyo yang tampan di kehidupan selanjutnya!",
+        "ar": "رجاءً اجعلني فتى طوكيو وسيمًا في حياتي القادمة!"
+      },
+      "ipa": "ˈpliz ˈmeɪk ˈmi ə ˈhæn.səm ˈtoʊ.ki.oʊ ˈbɔɪ ɪn ˈmaɪ ˈnɛkst ˈlaɪf!",
+      "start_ms": 37175,
+      "end_ms": 40400
+    },
+    {
+      "_id": "68c84d62814d43daf466b194",
+      "text": "Where...?",
+      "translations": {
+        "vi": "Ở đâu...?",
+        "th": "ที่ไหน...?",
+        "id": "Di mana...?",
+        "ar": "أين...؟?"
+      },
+      "ipa": "ˈwɛər...?",
+      "start_ms": 44260,
+      "end_ms": 45160
+    },
+    {
+      "_id": "68c84d62814d43daf466b196",
+      "text": "Now that you've mentioned, I do feel like I've been having weird dreams lately.",
+      "translations": {
+        "vi": "Giờ bạn nhắc mới nhớ, tôi thấy gần đây mình có những giấc mơ lạ.",
+        "th": "พอคุณพูดถึง, ฉันก็รู้สึกเหมือนว่าฉันฝันแปลกๆ มาพักนี้.",
+        "id": "Sekarang setelah kau sebutkan, aku memang merasa aku bermimpi aneh akhir-akhir ini.",
+        "ar": "الآن بعد أن ذكرت ذلك، أشعر بالفعل أنني كنت أرى أحلامًا غريبة مؤخرًا."
+      },
+      "ipa": "ˈnaʊ ðæt juːv ˈmɛnʃənd, aɪ ˈduː ˈfiːl laɪk aɪv bɪn ˈhævɪŋ ˈwɪrd ˈdriːmz ˈleɪtli.",
+      "start_ms": 45840,
+      "end_ms": 50180
+    },
+    {
+      "_id": "68c84d62814d43daf466b198",
+      "text": "I could dream about someone else's life?",
+      "translations": {
+        "vi": "Tôi có thể mơ về cuộc sống của người khác sao?",
+        "th": "ฉันฝันถึงชีวิตคนอื่นได้ด้วยเหรอ?",
+        "id": "Aku bisa bermimpi tentang kehidupan orang lain?",
+        "ar": "هل يمكنني أن أحلم بحياة شخص آخر؟?"
+      },
+      "ipa": "aɪ kʊd ˌdrim əˈbaʊt ˌsʌmˌwʌn ˌɛl.sɪz ˈlaɪf?",
+      "start_ms": 50780,
+      "end_ms": 53517
+    },
+    {
+      "_id": "68c84d62814d43daf466b19a",
+      "text": "What is this?",
+      "translations": {
+        "vi": "Cái gì đây?",
+        "th": "นี่มันอะไรกัน?",
+        "id": "Apa ini?",
+        "ar": "ما هذا؟?"
+      },
+      "ipa": "ˈwɑɾ ɪz ˈðɪs?",
+      "start_ms": 53567,
+      "end_ms": 54460
+    },
+    {
+      "_id": "68c84d62814d43daf466b19c",
+      "text": "Could this... Could this mean...",
+      "translations": {
+        "vi": "Liệu điều này... Liệu điều này có nghĩa là...",
+        "th": "นี่มัน... นี่มันอาจจะหมายความว่า...",
+        "id": "Mungkinkah ini... Mungkinkah ini berarti...",
+        "ar": "هل يمكن أن يكون هذا... هل يمكن أن يعني هذا..."
+      },
+      "ipa": "ˈkʊd ðɪs... ˈkʊd ðɪs min...",
+      "start_ms": 56940,
+      "end_ms": 59380
+    },
+    {
+      "_id": "68c84d62814d43daf466b19e",
+      "text": "In our dreams that girl and I... ...We're switching places?!",
+      "translations": {
+        "vi": "Trong giấc mơ của chúng ta, cô gái đó và tôi... ...Chúng ta đang hoán đổi vị trí sao?!",
+        "th": "ในความฝันของเรา เด็กผู้หญิงคนนั้นกับฉัน... ...เรากำลังสลับร่างกันเหรอ?!",
+        "id": "Dalam mimpi kita, gadis itu dan aku... ...Kita bertukar tempat?!",
+        "ar": "في أحلامنا، تلك الفتاة وأنا... ...نحن نتبادل الأماكن؟!"
+      },
+      "ipa": "ɪn ɑːr ˈdrimz ðæt ˈɡɜːrl ən ˈaɪ... ...wɪər ˈswɪtʃɪŋ ˈpleɪsɪz?!",
+      "start_ms": 60040,
+      "end_ms": 63380
+    },
+    {
+      "_id": "68c84d62814d43daf466b1a0",
+      "text": "There's one thing I'm certain of...",
+      "translations": {
+        "vi": "Có một điều tôi chắc chắn...",
+        "th": "มีสิ่งหนึ่งที่ฉันมั่นใจ...",
+        "id": "Ada satu hal yang aku yakini...",
+        "ar": "هناك شيء واحد أنا متأكد منه..."
+      },
+      "ipa": "ðɛrz ˌwʌn ˌθɪŋ aɪm ˈsɝtn̩ əv...",
+      "start_ms": 69600,
+      "end_ms": 71220
+    },
+    {
+      "_id": "68c84d62814d43daf466b1a2",
+      "text": "If we see each other, we'll definitely know right away.",
+      "translations": {
+        "vi": "Nếu chúng ta gặp nhau, chúng ta chắc chắn sẽ nhận ra ngay lập tức.",
+        "th": "ถ้าเราเจอกัน, เราจะรู้ได้ทันทีเลย.",
+        "id": "Jika kita bertemu, kita pasti akan langsung tahu.",
+        "ar": "إذا رأينا بعضنا البعض، سنعرف بالتأكيد على الفور."
+      },
+      "ipa": "ɪf wi ˈsi ˌiʧ ˈʌðər, wil ˈdɛfɪnɪtli ˈnoʊ ˌraɪt əˈweɪ.",
+      "start_ms": 72120,
+      "end_ms": 75901
+    },
+    {
+      "_id": "68c84d62814d43daf466b1a4",
+      "text": "I was planning to tell you, that wherever you are in the world,",
+      "translations": {
+        "vi": "Tôi đã định nói với bạn, rằng dù bạn ở bất cứ đâu trên thế giới,",
+        "th": "ฉันตั้งใจจะบอกเธอว่า, ไม่ว่าเธอจะอยู่ที่ไหนในโลก,",
+        "id": "Aku berencana memberitahumu, bahwa di mana pun kau berada di dunia,",
+        "ar": "كنت أخطط لأخبرك، أنه أينما كنت في العالم،"
+      },
+      "ipa": "aɪ wəz ˈplænɪŋ tə tɛl ju, ðæt wɛˈrɛvər ju ɑr ɪn ðə wɜrld,\"",
+      "start_ms": 75951,
+      "end_ms": 79960
+    },
+    {
+      "_id": "68c84d62814d43daf466b1a6",
+      "text": "I swear that I'll find you again no matter what.",
+      "translations": {
+        "vi": "Tôi thề rằng tôi sẽ tìm thấy bạn lần nữa cho dù có chuyện gì đi nữa.",
+        "th": "ฉันสาบานว่าฉันจะหาเธอเจออีกครั้งไม่ว่าจะเกิดอะไรขึ้น.",
+        "id": "Aku bersumpah bahwa aku akan menemukanmu lagi apa pun yang terjadi.",
+        "ar": "أقسم أنني سأجدك مرة أخرى مهما حدث."
+      },
+      "ipa": "aɪ ˈswɛr ðət ˌaɪl ˈfaɪnd jə əˈɡɛn ˈnoʊ ˈmæɾər ˈwʌt.",
+      "start_ms": 80060,
+      "end_ms": 82920
+    },
+    {
+      "_id": "68c84d62814d43daf466b1a8",
+      "text": "Who are you?",
+      "translations": {
+        "vi": "Bạn là ai?",
+        "th": "เธอคือใคร?",
+        "id": "Siapa kamu?",
+        "ar": "من أنت؟?"
+      },
+      "ipa": "ˈhuː ɑr ju?",
+      "start_ms": 83040,
+      "end_ms": 84160
+    },
+    {
+      "_id": "68c84d62814d43daf466b1aa",
+      "text": "Who are you?",
+      "translations": {
+        "vi": "Bạn là ai?",
+        "th": "เธอคือใคร?",
+        "id": "Siapa kamu?",
+        "ar": "من أنت؟?"
+      },
+      "ipa": "ˈhuː ər ˈjuː?",
+      "start_ms": 84240,
+      "end_ms": 85624
+    },
+    {
+      "_id": "68c84d62814d43daf466b1ac",
+      "text": "Could I ask you... ...Your Name?",
+      "translations": {
+        "vi": "Tôi có thể hỏi bạn... ...Tên của bạn?",
+        "th": "ฉันขอถามเธอได้ไหม... ...ชื่อของเธอ?",
+        "id": "Bolehkah aku bertanya padamu... ...Namamu?",
+        "ar": "هل يمكنني أن أسألك... ...اسمك؟?"
+      },
+      "ipa": "kʊd aɪ ˈæsk ju... ...ˌjʊər ˈneɪm?",
+      "start_ms": 85674,
+      "end_ms": 89140
+    }
+  ],
+  "view_count": 0,
+  "fake_count": 0,
+  "total_view_count": 17196,
+  "lessonProgress": {
+    "status": "in_progress"
+  }
+}

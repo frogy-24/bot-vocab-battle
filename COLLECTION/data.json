@@ -6402,6 +6402,270 @@
         "wordLength": 5,
         "wordMask": "_____"
       }
+    },
+    {
+      "card": {
+        "cardId": "6a32c49109446f571c4fb0db",
+        "data": {
+          "answer": "efficiently",
+          "collectedAt": "2026-06-24T10:55:42.966Z",
+          "collectedAtServer": "2026-06-24T17:55:42+07:00",
+          "round": 1,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "efficiently"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "يمكنها العمل بكفاءة عالية عندما تكون مركزة.",
+          "en": "She can work very *********** when focused.",
+          "id": "Dia bisa bekerja dengan sangat efisien saat fokus.",
+          "ja": "彼女は集中すると非常に効率的に仕事ができる。",
+          "th": "เธอสามารถทำงานได้อย่างมีประสิทธิภาพมากเมื่อมีสมาธิ",
+          "vi": "Cô ấy có thể làm việc rất hiệu quả khi tập trung."
+        },
+        "explanation": {
+          "ar": "القيام بشيء بهذه الطريقة يعني إكمال مهمة بنجاح دون إهدار الوقت أو الجهد أو الموارد. تحصل على نتائج جيدة بأقل قدر من الهدر.",
+          "en": "To do something this way means to complete a task successfully without wasting time, effort, or resources. You get good results with minimal waste.",
+          "id": "Melakukan sesuatu dengan cara ini berarti menyelesaikan tugas dengan sukses tanpa membuang waktu, tenaga, atau sumber daya. Anda mendapatkan hasil yang baik dengan pemborosan minimal.",
+          "ja": "この方法で何かを行うということは、時間、労力、資源を無駄にすることなくタスクを成功裏に完了させることを意味します。最小限の無駄で良い結果が得られます。",
+          "th": "การทำสิ่งใดสิ่งหนึ่งด้วยวิธีนี้หมายถึงการทำงานให้สำเร็จโดยไม่เสียเวลา ความพยายาม หรือทรัพยากร คุณจะได้รับผลลัพธ์ที่ดีโดยมีการสูญเสียน้อยที่สุด",
+          "vi": "Làm việc theo cách này có nghĩa là hoàn thành một nhiệm vụ thành công mà không lãng phí thời gian, công sức hoặc tài nguyên. Bạn đạt được kết quả tốt với sự lãng phí tối thiểu."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 11,
+        "translation": {
+          "ar": "بكفاءة",
+          "id": "efisien",
+          "ja": "効率的に",
+          "th": "มีประสิทธิภาพ",
+          "vi": "có hiệu quả"
+        },
+        "type": "adverb",
+        "wordLength": 11,
+        "wordMask": "___________"
+      }
+    },
+    {
+      "card": {
+        "cardId": "6a32c64a09446f571c4fc9c6",
+        "data": {
+          "answer": "parallax",
+          "collectedAt": "2026-06-24T10:55:48.888Z",
+          "collectedAtServer": "2026-06-24T17:55:48+07:00",
+          "round": 2,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "parallax"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "يجعل اختلاف المنظر القمر يبدو وكأنه يتحرك مقابل النجوم الخلفية.",
+          "en": "******** makes the moon seem to move against background stars.",
+          "id": "******** membuat bulan tampak bergerak di antara bintang-bintang latar belakang.",
+          "ja": "視差によって、月は背景の星に対して動いているように見える。",
+          "th": "พารัลแลกซ์ทำให้ดวงจันทร์ดูเหมือนเคลื่อนที่เมื่อเทียบกับดาวฤกษ์พื้นหลัง",
+          "vi": "******** khiến mặt trăng dường như di chuyển so với các ngôi sao nền."
+        },
+        "explanation": {
+          "ar": "هذا هو التغير الظاهري في موضع جسم عندما تنظر إليه من مكانين مختلفين.",
+          "en": "This is the apparent change in the position of an object when you look at it from two different places.",
+          "id": "Ini adalah perubahan posisi objek yang tampak ketika Anda melihatnya dari dua tempat yang berbeda.",
+          "ja": "異なる2つの場所から物体を見たときに、その物体の位置が異なって見える現象。",
+          "th": "นี่คือการเปลี่ยนแปลงตำแหน่งที่ปรากฏของวัตถุเมื่อคุณมองจากสองตำแหน่งที่แตกต่างกัน",
+          "vi": "Đây là sự thay đổi vị trí biểu kiến của một vật thể khi bạn nhìn nó từ hai vị trí khác nhau."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 8,
+        "translation": {
+          "ar": "اختلاف المنظر",
+          "id": "paralaks",
+          "ja": "視差",
+          "th": "พารัลแลกซ์",
+          "vi": "thị sai"
+        },
+        "type": "noun",
+        "wordLength": 8,
+        "wordMask": "________"
+      }
+    },
+    {
+      "card": {
+        "cardId": "69b59e24a71efcc97eb25d33",
+        "data": {
+          "answer": "substance",
+          "collectedAt": "2026-06-24T10:55:55.909Z",
+          "collectedAtServer": "2026-06-24T17:55:55+07:00",
+          "round": 3,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "substance"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "المادة البيضاء هي الملح.",
+          "en": "The white ********* is salt.",
+          "id": "Zat putih itu adalah garam.",
+          "ja": "白い物質は塩です。",
+          "th": "สารสีขาวคือเกลือ",
+          "vi": "Chất màu trắng là muối."
+        },
+        "explanation": {
+          "ar": "يشير هذا إلى نوع معين من المواد التي لها خصائص محددة. الماء والملح والبلاستيك كلها أمثلة على ذلك.",
+          "en": "This refers to a particular type of material that has specific qualities. Water, salt, and plastic are all examples of this.",
+          "id": "Ini mengacu pada jenis material tertentu yang memiliki kualitas spesifik. Air, garam, dan plastik semuanya adalah contoh dari ini.",
+          "ja": "これは、特定の性質を持つ特定の種類の物質を指します。水、塩、プラスチックはすべてその例です。",
+          "th": "สิ่งนี้หมายถึงวัสดุชนิดหนึ่งที่มีคุณสมบัติเฉพาะ น้ำ เกลือ และพลาสติกล้วนเป็นตัวอย่างของสิ่งนี้",
+          "vi": "Điều này đề cập đến một loại vật liệu cụ thể có những phẩm chất đặc trưng. Nước, muối và nhựa đều là ví dụ về điều này."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 9,
+        "translation": {
+          "ar": "مادة",
+          "id": "zat",
+          "ja": "物質",
+          "th": "สาร",
+          "vi": "chất"
+        },
+        "type": "noun",
+        "wordLength": 9,
+        "wordMask": "_________"
+      }
+    },
+    {
+      "card": {
+        "cardId": "6a32c67f09446f571c4fcc2d",
+        "data": {
+          "answer": "catharsis",
+          "collectedAt": "2026-06-24T10:56:02.578Z",
+          "collectedAtServer": "2026-06-24T17:56:02+07:00",
+          "round": 4,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "catharsis"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "كان البكاء بعد الفيلم الحزين بمثابة تطهير حقيقي.",
+          "en": "Crying after the sad movie was a true *********.",
+          "id": "Menangis setelah film sedih adalah katarsis yang sesungguhnya.",
+          "ja": "悲しい映画の後で泣くことは、真のカタルシスでした。",
+          "th": "การร้องไห้หลังจากดูหนังเศร้าเป็นการปลดปล่อยอารมณ์ที่แท้จริง",
+          "vi": "Khóc sau bộ phim buồn là một sự giải tỏa cảm xúc thực sự."
+        },
+        "explanation": {
+          "ar": "هذا هو إطلاق قوي للمشاعر يجعلك تشعر بتحسن بعد ذلك.",
+          "en": "This is a strong release of emotions that makes you feel better afterwards.",
+          "id": "Ini adalah pelepasan emosi yang kuat yang membuat Anda merasa lebih baik setelahnya.",
+          "ja": "これは、その後に気分が良くなるような、感情の強い解放です。",
+          "th": "นี่คือการปลดปล่อยอารมณ์ที่รุนแรงที่ทำให้คุณรู้สึกดีขึ้นหลังจากนั้น",
+          "vi": "Đây là sự giải tỏa cảm xúc mạnh mẽ khiến bạn cảm thấy tốt hơn sau đó."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 9,
+        "translation": {
+          "ar": "التطهير",
+          "id": "katarsis",
+          "ja": "カタルシス",
+          "th": "การชำระล้าง",
+          "vi": "sự thanh tẩy"
+        },
+        "type": "noun",
+        "wordLength": 9,
+        "wordMask": "_________"
+      }
+    },
+    {
+      "card": {
+        "cardId": "6a32c3cf09446f571c4fa34b",
+        "data": {
+          "answer": "object",
+          "collectedAt": "2026-06-24T10:58:11.134Z",
+          "collectedAtServer": "2026-06-24T17:58:11+07:00",
+          "round": 4,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "object"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "أنا أعترض بشدة على تلك القاعدة غير العادلة.",
+          "en": "I strongly ****** to that unfair rule.",
+          "id": "Saya sangat keberatan dengan aturan tidak adil itu.",
+          "ja": "私はその不公平な規則に強く反対します。",
+          "th": "ฉันคัดค้านกฎที่ไม่เป็นธรรมนั้นอย่างยิ่ง",
+          "vi": "Tôi kịch liệt phản đối quy tắc không công bằng đó."
+        },
+        "explanation": {
+          "ar": "للتعبير عن عدم موافقتك على شيء ما أو عدم استحسانك له. قد تقول \"لا\" أو تقدم سببًا لعدم إعجابك بفكرة ما.",
+          "en": "To express that you do not agree with something or that you disapprove of it. You might say \"no\" or give a reason why you don't like an idea.",
+          "id": "Untuk menyatakan bahwa Anda tidak setuju dengan sesuatu atau bahwa Anda tidak menyetujuinya. Anda mungkin mengatakan \"tidak\" atau memberikan alasan mengapa Anda tidak menyukai suatu ide.",
+          "ja": "何かに同意しない、または不承認であることを表明すること。あなたは「ノー」と言ったり、あるアイデアを好まない理由を述べたりするかもしれません。",
+          "th": "เพื่อแสดงว่าคุณไม่เห็นด้วยกับบางสิ่งบางอย่าง หรือคุณไม่เห็นด้วยกับมัน คุณอาจพูดว่า “ไม่” หรือให้เหตุผลว่าทำไมคุณถึงไม่ชอบความคิดนั้น",
+          "vi": "Để bày tỏ rằng bạn không đồng ý với điều gì đó hoặc bạn không chấp thuận nó. Bạn có thể nói \"không\" hoặc đưa ra lý do tại sao bạn không thích một ý tưởng."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 6,
+        "translation": {
+          "ar": "يعترض",
+          "id": "keberatan",
+          "ja": "反対する",
+          "th": "คัดค้าน",
+          "vi": "phản đối"
+        },
+        "type": "verb",
+        "wordLength": 6,
+        "wordMask": "______"
+      }
+    },
+    {
+      "card": {
+        "cardId": "6a32c35d09446f571c4f9cb8",
+        "data": {
+          "answer": "astute",
+          "collectedAt": "2026-06-24T10:58:23.880Z",
+          "collectedAtServer": "2026-06-24T17:58:23+07:00",
+          "round": 6,
+          "sourceEvent": "vocab-battle:round-result",
+          "totalRounds": 10,
+          "word": "astute"
+        },
+        "difficulty": "",
+        "exampleMasked": {
+          "ar": "إنها سيدة أعمال حصيفة ولديها أفكار ذكية.",
+          "en": "She is an ****** businesswoman with clever ideas.",
+          "id": "Dia adalah seorang pebisnis wanita yang cerdas dengan ide-ide cemerlang.",
+          "ja": "彼女は賢いアイデアを持つ抜け目のないビジネスウーマンです。",
+          "th": "เธอเป็นนักธุรกิจหญิงที่เฉียบแหลมพร้อมความคิดที่ชาญฉลาด",
+          "vi": "Cô ấy là một nữ doanh nhân sắc sảo với những ý tưởng thông minh."
+        },
+        "explanation": {
+          "ar": "الشخص الذي يجيد فهم المواقف بسرعة واتخاذ قرارات ذكية منها هو كذلك. إنهم أذكياء وفطنون.",
+          "en": "Someone who is very good at understanding situations quickly and making smart decisions from them is this way. They are clever and perceptive.",
+          "id": "Seseorang yang sangat pandai memahami situasi dengan cepat dan membuat keputusan cerdas darinya adalah seperti ini. Mereka cerdas dan tajam.",
+          "ja": "状況を素早く理解し、そこから賢明な決断を下すのが非常に得意な人を指します。彼らは賢く、洞察力があります。",
+          "th": "คนที่เก่งมากในการทำความเข้าใจสถานการณ์อย่างรวดเร็วและตัดสินใจอย่างชาญฉลาดจากสถานการณ์เหล่านั้น พวกเขาฉลาดและมีไหวพริบ",
+          "vi": "Một người rất giỏi trong việc nhanh chóng hiểu các tình huống và đưa ra quyết định thông minh từ đó là người như vậy. Họ thông minh và nhạy bén."
+        },
+        "hasAudio": true,
+        "image_url": "",
+        "letterCount": 6,
+        "translation": {
+          "ar": "حاذق",
+          "id": "cerdik",
+          "ja": "抜け目ない",
+          "th": "หลักแหลม",
+          "vi": "khôn ngoan"
+        },
+        "type": "adjective",
+        "wordLength": 6,
+        "wordMask": "______"
+      }
     }
   ]
 }
