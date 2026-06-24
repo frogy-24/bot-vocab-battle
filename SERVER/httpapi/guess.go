@@ -117,7 +117,7 @@ func (s *Server) guessWordWithLLM(ctx context.Context, hint EnglishGuessHint) (*
 			},
 		},
 		Temperature: 0,
-		MaxTokens:   1024,
+		MaxTokens:   2048,
 		Stream:      false,
 	}
 

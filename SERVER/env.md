@@ -1,0 +1,3 @@
+FIREBASE_API_KEY=AIzaSyDy3B5322OwrvTKzufs6fU2gS23F6l_7e0
+FIREBASE_CONTINUE_URL=https://parroto.app
+MAILTM_API_URL=https://api.mail.tm
