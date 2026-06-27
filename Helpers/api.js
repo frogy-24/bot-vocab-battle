@@ -59,7 +59,9 @@ let data;
 try {
   data = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 } catch (err) {
-  console.error(`\n❌ Lỗi: Không thể đọc file data.json tại đường dẫn: ${DATA_FILE}`);
+  console.error(
+    `\n❌ Lỗi: Không thể đọc file data.json tại đường dẫn: ${DATA_FILE}`,
+  );
   console.error(`Chi tiết lỗi: ${err.message}\n`);
   process.exit(1);
 }
@@ -75,12 +77,12 @@ const result = data.map((item) => ({
 
 const totalSentences = data.reduce(
   (sum, item) => sum + item.data.sentence_ids.length,
-  0
+  0,
 );
 
 const remainingSentences = result.reduce(
   (sum, item) => sum + item.data.length,
-  0
+  0,
 );
 
 console.log(`Need submit: ${remainingSentences}/${totalSentences}`);
@@ -110,14 +112,14 @@ async function submitSentence(sentenceId, accessToken) {
         body: JSON.stringify({
           data: protectedData,
         }),
-      }
+      },
     );
 
     if (response.status === 429) {
       const retryAfter = Number(response.headers.get("retry-after")) || 60;
 
       console.log(
-        `⚠ Rate limit (429) - sentence ${sentenceId}. Retry after ${retryAfter}s...`
+        `⚠ Rate limit (429) - sentence ${sentenceId}. Retry after ${retryAfter}s...`,
       );
 
       await sleep(retryAfter * 1000);
@@ -137,7 +139,7 @@ async function submitSentence(sentenceId, accessToken) {
 (async () => {
   // Lấy token từ file .env
   const accessToken = process.env.ACCESS_TOKEN;
-  
+
   if (!accessToken) {
     console.error("\n❌ Lỗi: Không tìm thấy ACCESS_TOKEN trong file .env!");
     process.exit(1);
@@ -153,7 +155,7 @@ async function submitSentence(sentenceId, accessToken) {
 
     for (let i = 0; i < item.data.length; i++) {
       const sentenceId = item.data[i];
-      await sleep(1500); // Delay 1 giây giữa các request để tránh bị rate limit
+      await sleep(500); // Delay 1 giây giữa các request để tránh bị rate limit
       try {
         await submitSentence(sentenceId, accessToken);
 
@@ -162,12 +164,12 @@ async function submitSentence(sentenceId, accessToken) {
         saveDoneData(doneData);
 
         console.log(
-          `✔ Payload ${item.id} | ${i + 1}/${item.data.length} | ${sentenceId}`
+          `✔ Payload ${item.id} | ${i + 1}/${item.data.length} | ${sentenceId}`,
         );
       } catch (err) {
         console.error(
           `✖ Payload ${item.id} | ${i + 1}/${item.data.length} | ${sentenceId}`,
-          err.message
+          err.message,
         );
       }
     }

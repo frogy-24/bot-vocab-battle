@@ -12,7 +12,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "chrome-remote-interface": "^0.34.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "node-clipboardy": "^1.0.3",
+    "openai": "^6.45.0"
   }
 }

@@ -42,6 +42,12 @@ const SOCKET_URL = process.env.SOCKET_URL ?? 'wss://api-socket.parroto.app/socke
 const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:8080';
 const TOKEN_REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
+const HIGH_ELO_OPPONENT_ABSOLUTE_THRESHOLD = 1400;
+const HIGH_ELO_OPPONENT_GAP_THRESHOLD = 150;
+const LONG_ANSWER_SPEEDUP_MIN_LENGTH = 7; 
+const HIGH_ELO_SPEEDUP_MIN_MS = 1000;
+const HIGH_ELO_SPEEDUP_MAX_MS = 2000;
+
 type LogEvent = {
     id: string;
     direction: 'in' | 'out' | 'auth' | 'error';
@@ -448,6 +454,8 @@ export default function ParotoMonitor() {
     const opponentRef = useRef<Opponent | null>(null);
     const opponentBattleActivityRequestRef = useRef(0);
     const opponentBattleActivityCacheRef = useRef<Map<string, BattleActivityStats>>(new Map());
+    const opponentBattleActivityRef = useRef<BattleActivityStats | null>(null);
+    const myBattleActivityRef = useRef<BattleActivityStats | null>(null);
     const matchStatsRef = useRef({ wins: 0, losses: 0 });
     const userInfoRef = useRef<UserInfo>(DEFAULT_USER_INFO);
     const serverLoadingRef = useRef(false);
@@ -999,6 +1007,14 @@ export default function ParotoMonitor() {
         isSearchingBattleRef.current = isSearchingBattle;
     }, [isSearchingBattle]);
 
+    useEffect(() => {
+        opponentBattleActivityRef.current = opponentBattleActivity;
+    }, [opponentBattleActivity]);
+
+    useEffect(() => {
+        myBattleActivityRef.current = myBattleActivity;
+    }, [myBattleActivity]);
+
     // useEffect(() => {
     //   if (!botQueueAutoRefresh) {
     //     if (botQueuePollingRef.current) clearInterval(botQueuePollingRef.current);
@@ -1256,6 +1272,7 @@ export default function ParotoMonitor() {
 
     const resetOpponentBattleActivity = () => {
         opponentBattleActivityRequestRef.current += 1;
+        opponentBattleActivityRef.current = null;
         setOpponentBattleActivity(null);
         setOpponentBattleActivityError('');
         setIsLoadingOpponentBattleActivity(false);
@@ -1271,6 +1288,7 @@ export default function ParotoMonitor() {
         setOpponentBattleActivityError('');
 
         if (!userId) {
+            opponentBattleActivityRef.current = null;
             setOpponentBattleActivity(null);
             setIsLoadingOpponentBattleActivity(false);
             return null;
@@ -1278,6 +1296,7 @@ export default function ParotoMonitor() {
 
         const cached = opponentBattleActivityCacheRef.current.get(userId);
         if (cached) {
+            opponentBattleActivityRef.current = cached;
             setOpponentBattleActivity(cached);
             setIsLoadingOpponentBattleActivity(false);
             pushLog('auth', '📈 ELO đối thủ cache', `UID=${userId} | ELO=${cached.elo} | Games=${cached.totalGames}`);
@@ -1285,6 +1304,7 @@ export default function ParotoMonitor() {
         }
 
         if (!token) {
+            opponentBattleActivityRef.current = null;
             setOpponentBattleActivity(null);
             setOpponentBattleActivityError('Thiếu Firebase Token');
             setIsLoadingOpponentBattleActivity(false);
@@ -1292,6 +1312,7 @@ export default function ParotoMonitor() {
             return null;
         }
 
+        opponentBattleActivityRef.current = null;
         setOpponentBattleActivity(null);
         setIsLoadingOpponentBattleActivity(true);
 
@@ -1319,6 +1340,7 @@ export default function ParotoMonitor() {
                 return normalized;
             }
 
+            opponentBattleActivityRef.current = normalized;
             setOpponentBattleActivity(normalized);
             setOpponentBattleActivityError('');
 
@@ -1333,6 +1355,7 @@ export default function ParotoMonitor() {
             const message = err.response?.data?.message || err.message || 'Lỗi không xác định';
 
             if (requestId === opponentBattleActivityRequestRef.current) {
+                opponentBattleActivityRef.current = null;
                 setOpponentBattleActivity(null);
                 setOpponentBattleActivityError(message);
             }
@@ -1384,6 +1407,7 @@ export default function ParotoMonitor() {
 
             const normalized = normalizeBattleActivityStats(activity);
 
+            myBattleActivityRef.current = normalized;
             setMyBattleActivity(normalized);
 
             pushLog(
@@ -1536,9 +1560,42 @@ export default function ParotoMonitor() {
 
     const normalizeAnswer = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
 
+    const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const isHighEloOpponent = () => {
+        const opponentElo = opponentBattleActivityRef.current?.elo;
+        const myElo = myBattleActivityRef.current?.elo;
+
+        if (typeof opponentElo !== 'number' || !Number.isFinite(opponentElo)) return false;
+
+        const isHighByAbsoluteElo = opponentElo >= HIGH_ELO_OPPONENT_ABSOLUTE_THRESHOLD;
+        const isHighByGap =
+            typeof myElo === 'number' && Number.isFinite(myElo) && opponentElo - myElo >= HIGH_ELO_OPPONENT_GAP_THRESHOLD;
+
+        return isHighByAbsoluteElo || isHighByGap;
+    };
+
+    const applyHighEloDelayMinus = (baseDelayMs: number, answer: string) => {
+        const cleanAnswer = normalizeAnswer(answer);
+
+        if (cleanAnswer.length <= LONG_ANSWER_SPEEDUP_MIN_LENGTH || !isHighEloOpponent()) {
+            return {
+                delayMs: baseDelayMs,
+                minusMs: 0,
+            };
+        }
+
+        const minusMs = getRandomInt(HIGH_ELO_SPEEDUP_MIN_MS, HIGH_ELO_SPEEDUP_MAX_MS);
+
+        return {
+            delayMs: Math.max(500, baseDelayMs - minusMs),
+            minusMs,
+        };
+    };
+
     const getLateRoundDelayMs = (totalTimeMs?: number) => {
         const totalMs = Number(totalTimeMs) > 0 ? Number(totalTimeMs) : 30000;
-        const remainingMs = Math.floor(Math.random() * 5001) + 18000; // gửi khi còn ngẫu nhiên 5-10s
+        const remainingMs = Math.floor(Math.random() * 5001) + 18000; 
         const delayMs = Math.max(500, totalMs - remainingMs);
 
         return {
@@ -2188,13 +2245,22 @@ export default function ParotoMonitor() {
         const len = cleanWord.length;
         let delay = 1000;
 
-        if (len < 5) delay = Math.floor(Math.random() * 200) + 200;
-        else if (len <= 8) delay = Math.floor(Math.random() * 400) + 3000;
-        else if (len <= 12) delay = Math.floor(Math.random() * 400) + 5000;
+        if (len < 5) delay = Math.floor(Math.random() * 200) + 1500;
+        else if (len <= 8) delay = Math.floor(Math.random() * 400) + 3500;
+        else if (len <= 12) delay = Math.floor(Math.random() * 400) + 6000;
         else delay = Math.floor(Math.random() * 500) + Math.floor(Math.random() * 8000);
 
+        const delayMinusResult = applyHighEloDelayMinus(delay, cleanWord);
+        delay = delayMinusResult.delayMs;
+
         clearPendingAutoAnswer();
-        pushLog('auth', '🤖 Auto-Solver', `Từ [${cleanWord}] (${len} ký tự) -> Tự gửi sau ${(delay / 1000).toFixed(2)}s`);
+        pushLog(
+            'auth',
+            '🤖 Auto-Solver',
+            `Từ [${cleanWord}] (${len} ký tự) -> Tự gửi sau ${(delay / 1000).toFixed(2)}s${
+                delayMinusResult.minusMs ? ` | Đối thủ ELO cao, trừ delay ${(delayMinusResult.minusMs / 1000).toFixed(1)}s` : ''
+            }`,
+        );
 
         autoAnswerTimeoutRef.current = setTimeout(() => {
             sendAutoAnswerOnce(cleanWord, 'Auto', cardId, roundKey);
